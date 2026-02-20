@@ -1,0 +1,56 @@
+version: '3.9'
+services:
+  mongodb:
+    image: mongo:7
+    container_name: blink-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  user-service:
+    build: ./user-service
+    ports:
+      - "8001:8001"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017
+      - DB_NAME=blinkit
+      - JWT_SECRET=super-secret-key
+    depends_on:
+      - mongodb
+
+  product-service:
+    build: ./product-service
+    ports:
+      - "8002:8002"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017
+      - DB_NAME=blinkit
+    depends_on:
+      - mongodb
+
+  cart-order-service:
+    build: ./cart-order-service
+    ports:
+      - "8003:8003"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017
+      - DB_NAME=blinkit
+      - JWT_SECRET=super-secret-key
+      - PRODUCT_SERVICE_URL=http://product-service:8002
+    depends_on:
+      - mongodb
+      - product-service
+
+  delivery-service:
+    build: ./delivery-service
+    ports:
+      - "8004:8004"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017
+      - DB_NAME=blinkit
+    depends_on:
+      - mongodb
+
+volumes:
+  mongo_data:
