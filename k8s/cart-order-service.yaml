@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cart-order-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cart-order-service
+  template:
+    metadata:
+      labels:
+        app: cart-order-service
+    spec:
+      containers:
+        - name: cart-order-service
+          image: cart-order-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8003
+          env:
+            - name: MONGO_URI
+              value: mongodb://mongodb:27017
+            - name: DB_NAME
+              value: blinkit
+            - name: JWT_SECRET
+              value: super-secret-key
+            - name: PRODUCT_SERVICE_URL
+              value: http://product-service:8002
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cart-order-service
+spec:
+  selector:
+    app: cart-order-service
+  ports:
+    - port: 8003
+      targetPort: 8003
